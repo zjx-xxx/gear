@@ -1,0 +1,95 @@
+*INCLUDE, INPUT=assembled_gears_OUT.inp
+
+*INCLUDE, INPUT=contact_1.sur
+
+*INCLUDE, INPUT=contact_2.sur
+
+*MATERIAL, NAME=steel
+*ELASTIC
+210000,0.3
+
+*DENSITY
+7.9e-9
+
+*SOLID SECTION, ELSET=C3D4, MATERIAL=steel
+
+
+**Before using surface to surface contact, based on nodeset.
+**Run CGX in pre-processor mode and type:
+
+**   comp <nodset> do
+**   send <nodeset> abq sur
+
+** .sur text file with group S<nodeset> will be created
+** in working folder. Just *INCLUDE it to calculation before contact card.
+
+
+
+*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE, ADJUST=0.001
+Scontact_2,Scontact_1
+
+
+*SURFACE INTERACTION,NAME=SI1
+*SURFACE BEHAVIOR,PRESSURE-OVERCLOSURE=Hard
+
+*FRICTION
+0.2, 1e6
+
+*NODE
+2000001,0.,0.,0.
+2000002,0.,0.,0.
+
+3000001,73.135,0.,0.
+3000002,73.135,0.,0.
+
+*Nset, Nset=Reference_Point-1_ref_267291
+2000001
+*Nset, Nset=Reference_Point-1_rot_267292
+2000002
+
+*RIGID BODY,NSET=hole_gear_1,REF NODE=2000001,ROT NODE=2000002
+*RIGID BODY,NSET=hole_gear_2,REF NODE=3000001,ROT NODE=3000002
+
+***ELEMENT,TYPE=SPRING1,ELSET=spring
+**9999001,3000002
+
+***SPRING,ELSET=spring
+**3
+**500.
+
+*BOUNDARY
+2000001,1,3,0.
+3000001,1,3,0.
+2000002,1,2,0.
+3000002,1,2,0.
+2000002,3,3,0.01
+
+
+*STEP,NLGEOM,inc=100
+*STATIC
+0.1, 1.0, 1e-6, 1
+
+*CLOAD
+2000002,6,62200.
+
+
+** boundary conditions (load)
+
+** output (frd file)
+**Displacements
+*Node print, Nset=Reference_Point-1_ref_267291, Global=Yes
+RF
+*Node print, Nset=Reference_Point-1_rot_267292, Global=Yes
+RF
+**
+** Field outputs +++++++++++++++++++++++++++++++++++++++++++
+**
+*Node file
+RF, U
+*El file
+S, E, NOE
+**
+** End step ++++++++++++++++++++++++++++++++++++++++++++++++
+**
+*End step
+
